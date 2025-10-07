@@ -15,7 +15,7 @@ public:
     virtual void OnRender();
     virtual void OnImguiRender();
     virtual void OnWindowResize(GLFWwindow* window, int width, int height);
-    virtual void RenderShadowMap(const std::unique_ptr<Shader>& shader) {};
+    virtual void RenderShadowMap(Shader* shader) {};
 
     void SetFrameBufferData();
     void BindPostProcessingFrameBuffer();
@@ -24,7 +24,8 @@ public:
 protected:
     int FrameWidth, FrameHeight;
     bool m_Shadow = false;
-    unsigned int m_DepthTexture;
+    unsigned int m_ShadowMap;
+    unsigned int m_ShadowCubeMap;
     std::unique_ptr<Light> m_Light;
     
 private:
@@ -34,6 +35,7 @@ private:
     int m_CurrentPostProcess = 0;
     unsigned int m_MultisamplingFBO, m_PostProcessingFBO, m_FrameBufferTex;
     unsigned int m_ShadowMapFBO;
+    unsigned int m_ShadowCubeMapFBO;
     std::unique_ptr<Shader> m_PostProcessShader;
     std::unique_ptr<Shader> m_ShadowMapShader;
     std::unique_ptr<Shader> m_DebugOutputShader;

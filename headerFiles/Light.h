@@ -3,7 +3,7 @@
 
 #include"Mesh.h"
 
-enum class LightType
+enum class LightMode
 {
     Directional = 0, Point = 1, Spot = 2
 };
@@ -19,16 +19,22 @@ public:
 
     virtual void upload(Shader& shader, const std::string& uniformName) const {};
 
-    LightType m_Type;
+    LightMode m_Mode;
 
-    void SetPosition(const glm::vec3& pos) {m_Position = pos; }
-    const glm::vec3& GetPosition() const {return m_Position; }
+    void SetPosition(const glm::vec3& pos);
+    const glm::vec3& GetPosition() const;
 
-    void SetColor(const glm::vec4& color) {m_Color = color; }
-    const glm::vec4& GetColor() const {return m_Color; }
+    void SetColor(const glm::vec4& color);
+    const glm::vec4& GetColor() const;
 
-    void setEnabled(bool e) { m_Enabled = e; }
-    bool isEnabled() const { return m_Enabled; }
+    void setEnabled(bool e);
+    bool isEnabled() const;
+
+    void SetMode(Shader* shader, LightMode mode);
+    LightMode GetMode() const;
+
+    const glm::mat4& GetLightSpaceMatrix();
+    const std::vector<glm::mat4>& GetLightSpaceMatrices();
 
     std::unique_ptr<Mesh> m_Mesh;
 

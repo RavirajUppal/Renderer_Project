@@ -137,8 +137,8 @@ TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
     m_FloorShader->Activate();
     m_FloorShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
-    m_FloorShader->SetInt1("lightMode", 0);
     m_FloorShader->SetInt1("shadowMap", 3);
+    m_Light->SetMode(m_FloorShader.get(), LightMode::Directional);
     m_Floor = std::make_unique<Mesh>(floorVerts, floorIndi, floorTex);
 
     //Camera
@@ -208,16 +208,24 @@ void TestShadow::DrawScene()
     lightModel = glm::translate(lightModel, lightPos);
     m_Light->m_Mesh->Draw(*m_LightShader, *m_Camera, lightModel);
 
-    glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 1.0f, 10.0f);
-    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
     m_FloorShader->Activate();
-    m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
+    if (m_Light->GetMode() != LightMode::Point)
+    {
+        m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
+    }
+    else
+    {
+        glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
+        glm::mat4 perspectiveProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+        glm::mat4 lightView = glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+        glm::mat4 lightSpaceMatrix = perspectiveProj * lightView;
+        m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
+    }
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
     if (m_Shadow){
         m_FloorShader->SetInt1("useShadow", 1);
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, m_DepthTexture);
+        glBindTexture(GL_TEXTURE_2D, m_ShadowMap);
     } else {
         m_FloorShader->SetInt1("useShadow", 0);
     }
@@ -234,7 +242,7 @@ void TestShadow::DrawScene()
     }
 }
 
-void TestShadow::RenderShadowMap(const std::unique_ptr<Shader>& shader)
+void TestShadow::RenderShadowMap(Shader* shader)
 {
     m_Floor->Draw(*shader, *m_Camera);
     for (const auto& pos : cubePositions) 
@@ -249,22 +257,19 @@ void TestShadow::OnImguiRender()
 {
     if (ImGui::Button("Directional Light"))
     {
-        m_FloorShader->Activate();
-        m_FloorShader->SetInt1("lightMode", 0);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Directional);
         // m_CubeInstanceShader->Activate();
         // m_CubeInstanceShader->SetInt1("lightMode", 0);
     }
     if (ImGui::Button("Point Light"))
     {
-        m_FloorShader->Activate();
-        m_FloorShader->SetInt1("lightMode", 1);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
         // m_CubeInstanceShader->Activate();
         // m_CubeInstanceShader->SetInt1("lightMode", 1);
     }
     if (ImGui::Button("Spot Light"))
     {
-        m_FloorShader->Activate();
-        m_FloorShader->SetInt1("lightMode", 2);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Spot);
         // m_CubeInstanceShader->Activate();
         // m_CubeInstanceShader->SetInt1("lightMode", 2);
     }

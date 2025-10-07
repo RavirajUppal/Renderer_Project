@@ -13,7 +13,7 @@ public:
     void OnRender() override;
     void OnImguiRender() override;
     void OnWindowResize(GLFWwindow* window, int width, int height) override;
-    void RenderShadowMap(const std::unique_ptr<Shader>& shader) override;
+    void RenderShadowMap(Shader* shader) override;
 
 private:
     GLFWwindow *m_Window;

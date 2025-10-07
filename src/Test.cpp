@@ -89,6 +89,34 @@ unsigned int CreateDepthMapFBO(unsigned int& depthTexture, int shadowWidth, int 
     return fbo;
 }
 
+unsigned int CreateDepthCubeMapFBO(unsigned int& cubeTexture, int shadowWidth, int shadowHeight)
+{
+    unsigned int fbo;
+    glGenFramebuffers(1, &fbo);
+    
+    glGenTextures(1, &cubeTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+    for (unsigned int i = 0; i < 6; ++i)
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP, cubeTexture, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Shadow Map Framebuffer error: " << fboStatus << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    return fbo;
+}
+
 Test::Test(GLFWwindow *window)
 {
     glfwGetFramebufferSize(window, &FrameWidth, &FrameHeight);
@@ -172,7 +200,8 @@ void Test::SetFrameBufferData()
 
     m_MultisamplingFBO = CreateMultiSampleFBO(4, FrameWidth, FrameHeight);
     m_PostProcessingFBO = CreatePostProcessFBO(m_FrameBufferTex, FrameWidth, FrameHeight);
-    m_ShadowMapFBO = CreateDepthMapFBO(m_DepthTexture, m_ShadowWidth, m_ShadowHeight);
+    m_ShadowMapFBO = CreateDepthMapFBO(m_ShadowMap, m_ShadowWidth, m_ShadowHeight);
+    m_ShadowCubeMapFBO = CreateDepthCubeMapFBO(m_ShadowCubeMap, m_ShadowWidth, m_ShadowHeight);
 }
 
 void Test::BindPostProcessingFrameBuffer()
@@ -232,7 +261,7 @@ void Test::RenderShadowPass()
     glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
     ConfigureShadowShader();
-    RenderShadowMap(m_ShadowMapShader);
+    RenderShadowMap(m_ShadowMapShader.get());
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, FrameWidth, FrameHeight);
 }
@@ -243,9 +272,18 @@ void Test::ConfigureShadowShader()
         std::cerr << "cant Configure lightSpaceMatrix bcoz Light is null.\n";
         return;
     }
-    glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 1.0f, 10.0f);
-    glm::mat4 lightView = glm::lookAt(m_Light->GetPosition(), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-    m_ShadowMapShader->Activate();
-    m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
+    if (m_Light->GetMode() != LightMode::Point)
+    {
+        m_ShadowMapShader->Activate();
+        m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
+    }
+    else
+    {
+        glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
+        glm::mat4 perspectiveProj = glm::perspective(glm::radians(90.0f), (float)m_ShadowWidth/m_ShadowHeight, 0.1f, 100.0f);
+        glm::mat4 lightView = glm::lookAt(m_Light->GetPosition(), m_Light->GetPosition() + glm::vec3(0.0, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+        glm::mat4 lightSpaceMatrix = perspectiveProj * lightView;
+        m_ShadowMapShader->Activate();
+        m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
+    }
 }
