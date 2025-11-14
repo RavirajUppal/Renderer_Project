@@ -10,12 +10,14 @@ in vec4 fragPosLightSpace;
 uniform sampler2D diffuse0;
 uniform sampler2D specular0;
 uniform sampler2D shadowMap;
+uniform samplerCube shadowCubeMap;
 uniform bool useShadow;
 
 uniform vec4 lightColor;
 uniform vec3 lightPos;
 uniform vec3 CameraPos;
 uniform int lightMode;
+uniform float farPlane;
 
 float ShadowCalculation(vec4 fragPosLight, vec3 normal, vec3 lightDirection)
 {
@@ -45,6 +47,35 @@ float ShadowCalculation(vec4 fragPosLight, vec3 normal, vec3 lightDirection)
 
     return shadow;
 } 
+
+float ShadowCalculationUsingCubeMap(vec3 normal, vec3 lightDirection){
+	float shadow = 0.0f;
+	vec3 fragToLight = currPos - lightPos;
+	float currentDepth = length(fragToLight);
+	float bias = max(0.5f * (1.0f - dot(normal, lightDirection)), 0.0005f); 
+
+	// Not really a radius, more like half the width of a square
+	int sampleRadius = 2;
+	float offset = 0.02f;
+	for(int z = -sampleRadius; z <= sampleRadius; z++)
+	{
+		for(int y = -sampleRadius; y <= sampleRadius; y++)
+		{
+		    for(int x = -sampleRadius; x <= sampleRadius; x++)
+		    {
+		        float closestDepth = texture(shadowCubeMap, fragToLight + vec3(x, y, z) * offset).r;
+				// Remember that we divided by the farPlane?
+				// Also notice how the currentDepth is not in the range [0, 1]
+				closestDepth *= farPlane;
+				if (currentDepth > closestDepth + bias)
+					shadow += 1.0f;     
+		    }    
+		}
+	}
+	// Average shadow
+	shadow /= pow((sampleRadius * 2 + 1), 3);
+	return shadow;
+}
 
 vec4 DirectionalLight()
 {
@@ -92,7 +123,7 @@ vec4 PointLight()
       specular = specAmount * specularLight;
   }
 
-  float shadow = useShadow ? ShadowCalculation(fragPosLightSpace, Normal, lightDirection) : 0.0f;
+  float shadow = useShadow ? ShadowCalculationUsingCubeMap(Normal, lightDirection) : 0.0f;
 	
   return (texture(diffuse0, texCoord)  * (diffuse * (1.0f - shadow) * inten + ambient) + texture(specular0, texCoord).r  * specular * (1.0f - shadow) * inten) * lightColor ;
 }

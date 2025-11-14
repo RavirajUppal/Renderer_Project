@@ -26,6 +26,7 @@ public:
 	void SetFloat1(const std::string& name, float x) const;
 	void SetInt1(const std::string& name, int x) const;
 	void SetMat4(const std::string &name, const float *matrix) const;
+	void SetVecOfMat4(const std::string &name, const std::vector<glm::mat4>& matrix) const;
 	void PrintActiveUniforms() const;
 
 private:

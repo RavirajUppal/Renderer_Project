@@ -193,6 +193,20 @@ void Shader::SetMat4(const std::string &name, const float *matrix) const
     }
 }
 
+void Shader::SetVecOfMat4(const std::string &name, const std::vector<glm::mat4>& matrixVec) const
+{
+    GLint loc = glGetUniformLocation(ID, name.c_str());
+    if (loc != -1)
+    {
+        // Upload 4x4 matrix, no transpose (OpenGL expects column-major order)
+        glUniformMatrix4fv(loc, matrixVec.size(), GL_FALSE, &matrixVec[0][0][0]);
+    }
+    else
+    {
+        std::cerr << "Warning: uniform '" << name << "' not found.\n";
+    }
+}
+
 void Shader::PrintActiveUniforms() const
 {
     GLint count;

@@ -105,13 +105,13 @@ unsigned int CreateDepthCubeMapFBO(unsigned int& cubeTexture, int shadowWidth, i
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP, cubeTexture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cubeTexture, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
 
     auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "Shadow Map Framebuffer error: " << fboStatus << std::endl;
+        std::cout << "Shadow Cube Map Framebuffer error: " << fboStatus << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     return fbo;
@@ -173,6 +173,9 @@ void Test::SetFrameBufferData()
 
 
     m_ShadowMapShader = std::make_unique<Shader>(SHADER_DIR "shadowMap.vert", SHADER_DIR "shadowMap.frag");
+    m_ShadowCubeMapShader = std::make_unique<Shader>(SHADER_DIR "shadowCubeMap.vert", SHADER_DIR "shadowCubeMap.frag", SHADER_DIR "shadowCubeMap.geom");
+    m_ShadowCubeMapShader->Activate();
+    m_ShadowCubeMapShader->SetFloat1("farPlane", 100.0f);
 
     Vertex quadVertices[] =
         {//               COORDINATES           /            NORMALS          /           COLORS         /       TEXTURE COORDINATES    //
@@ -258,10 +261,20 @@ void Test::DrawPostProcessingOnScreen()
 void Test::RenderShadowPass()
 {
     glViewport(0, 0, m_ShadowWidth, m_ShadowHeight);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowMapFBO);
+    if (m_Light->GetMode() == LightMode::Point){
+        glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowCubeMapFBO);
+    }
+    else{
+        glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowMapFBO);
+    }
     glClear(GL_DEPTH_BUFFER_BIT);
     ConfigureShadowShader();
-    RenderShadowMap(m_ShadowMapShader.get());
+    if (m_Light->GetMode() == LightMode::Point){
+        RenderShadowMap(m_ShadowCubeMapShader.get());
+    }
+    else{
+        RenderShadowMap(m_ShadowMapShader.get());
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, FrameWidth, FrameHeight);
 }
@@ -272,18 +285,15 @@ void Test::ConfigureShadowShader()
         std::cerr << "cant Configure lightSpaceMatrix bcoz Light is null.\n";
         return;
     }
-    if (m_Light->GetMode() != LightMode::Point)
-    {
-        m_ShadowMapShader->Activate();
-        m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
+    
+    if (m_Light->GetMode() == LightMode::Point){
+        m_ShadowCubeMapShader->Activate();
+        m_ShadowCubeMapShader->SetVec3("lightPos", m_Light->GetPosition());
+        m_ShadowCubeMapShader->SetVecOfMat4("shadowMatrices", m_Light->GetLightMatricesForCubeMap());
     }
     else
     {
-        glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
-        glm::mat4 perspectiveProj = glm::perspective(glm::radians(90.0f), (float)m_ShadowWidth/m_ShadowHeight, 0.1f, 100.0f);
-        glm::mat4 lightView = glm::lookAt(m_Light->GetPosition(), m_Light->GetPosition() + glm::vec3(0.0, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-        glm::mat4 lightSpaceMatrix = perspectiveProj * lightView;
         m_ShadowMapShader->Activate();
-        m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
+        m_ShadowMapShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
     }
 }

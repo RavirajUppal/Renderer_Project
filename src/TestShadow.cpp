@@ -1,73 +1,76 @@
 #include "TestShadow.h"
 
-std::vector<Vertex> GenerateCube(float size = 1.0f)
+namespace
 {
-    std::vector<Vertex> vertices;
-    vertices.reserve(24); // 6 faces * 4 vertices
-
-    // Directions for cube faces
-    glm::vec3 normals[6] = {
-        {0, 0, 1},  // Front
-        {0, 0, -1}, // Back
-        {-1, 0, 0}, // Left
-        {1, 0, 0},  // Right
-        {0, 1, 0},  // Top
-        {0, -1, 0}  // Bottom
-    };
-
-    // Each face defined in CCW order
-    glm::vec3 faceCoords[6][4] = {
-        {{-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}},     // Front
-        {{-1, -1, -1}, {-1, 1, -1}, {1, 1, -1}, {1, -1, -1}}, // Back
-        {{-1, -1, -1}, {-1, -1, 1}, {-1, 1, 1}, {-1, 1, -1}}, // Left
-        {{1, -1, -1}, {1, 1, -1}, {1, 1, 1}, {1, -1, 1}},     // Right
-        {{-1, 1, -1}, {-1, 1, 1}, {1, 1, 1}, {1, 1, -1}},     // Top
-        {{-1, -1, -1}, {1, -1, -1}, {1, -1, 1}, {-1, -1, 1}}  // Bottom
-    };
-
-    // Texture coordinates (same for all faces)
-    glm::vec2 uvs[4] = {
-        {0.0f, 0.0f},
-        {1.0f, 0.0f},
-        {1.0f, 1.0f},
-        {0.0f, 1.0f}};
-
-    for (int f = 0; f < 6; f++)
-    { // 6 faces
-        for (int v = 0; v < 4; v++)
-        { // 4 vertices per face
-            glm::vec3 pos = faceCoords[f][v] * size;
-            vertices.push_back(Vertex{pos, normals[f], glm::vec3(1.0f), uvs[v]});
-        }
-    }
-
-    return vertices;
-}
-
-std::vector<GLuint> GenerateCubeIndices()
-{
-    std::vector<GLuint> indices;
-    indices.reserve(36);
-
-    for (int f = 0; f < 6; f++)
+    std::vector<Vertex> GenerateCube(float size = 1.0f)
     {
-        GLuint start = f * 4;
-        indices.insert(indices.end(), {start, start + 1, start + 2,
-                                       start, start + 2, start + 3});
+        std::vector<Vertex> vertices;
+        vertices.reserve(24); // 6 faces * 4 vertices
+
+        // Directions for cube faces
+        glm::vec3 normals[6] = {
+            {0, 0, 1},  // Front
+            {0, 0, -1}, // Back
+            {-1, 0, 0}, // Left
+            {1, 0, 0},  // Right
+            {0, 1, 0},  // Top
+            {0, -1, 0}  // Bottom
+        };
+
+        // Each face defined in CCW order
+        glm::vec3 faceCoords[6][4] = {
+            {{-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}},     // Front
+            {{-1, -1, -1}, {-1, 1, -1}, {1, 1, -1}, {1, -1, -1}}, // Back
+            {{-1, -1, -1}, {-1, -1, 1}, {-1, 1, 1}, {-1, 1, -1}}, // Left
+            {{1, -1, -1}, {1, 1, -1}, {1, 1, 1}, {1, -1, 1}},     // Right
+            {{-1, 1, -1}, {-1, 1, 1}, {1, 1, 1}, {1, 1, -1}},     // Top
+            {{-1, -1, -1}, {1, -1, -1}, {1, -1, 1}, {-1, -1, 1}}  // Bottom
+        };
+
+        // Texture coordinates (same for all faces)
+        glm::vec2 uvs[4] = {
+            {0.0f, 0.0f},
+            {1.0f, 0.0f},
+            {1.0f, 1.0f},
+            {0.0f, 1.0f}};
+
+        for (int f = 0; f < 6; f++)
+        { // 6 faces
+            for (int v = 0; v < 4; v++)
+            { // 4 vertices per face
+                glm::vec3 pos = faceCoords[f][v] * size;
+                vertices.push_back(Vertex{pos, normals[f], glm::vec3(1.0f), uvs[v]});
+            }
+        }
+
+        return vertices;
     }
 
-    return indices;
-}
+    std::vector<GLuint> GenerateCubeIndices()
+    {
+        std::vector<GLuint> indices;
+        indices.reserve(36);
 
-std::vector<glm::vec3> cubePositions = {
-    {0.0f, 2.0f, 0.0f},
-    {2.0f, 0.5f, -3.0f},
-    {-1.5f, 1.0f, -2.5f},
-    {3.0f, 2.5f, -1.0f}
-};
+        for (int f = 0; f < 6; f++)
+        {
+            GLuint start = f * 4;
+            indices.insert(indices.end(), {start, start + 1, start + 2,
+                                           start, start + 2, start + 3});
+        }
+
+        return indices;
+    }
+
+    std::vector<glm::vec3> cubePositions = {
+        {0.0f, 2.0f, 0.0f},
+        {2.0f, 0.5f, -3.0f},
+        {-1.5f, 1.0f, -2.5f},
+        {3.0f, 2.5f, -1.0f}};
+}
 
 TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
 {
+    // m_Shadow = true;
     Vertex floorVertices[] =
         {//               COORDINATES           /            NORMALS          /           COLORS         /       TEXTURE COORDINATES    //
          Vertex{glm::vec3(-5.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)},
@@ -137,8 +140,9 @@ TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
     m_FloorShader->Activate();
     m_FloorShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
-    m_FloorShader->SetInt1("shadowMap", 3);
-    m_Light->SetMode(m_FloorShader.get(), LightMode::Directional);
+    m_FloorShader->SetInt1("shadowMap", 2);
+    m_FloorShader->SetInt1("shadowCubeMap", 3);
+    m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
     m_Floor = std::make_unique<Mesh>(floorVerts, floorIndi, floorTex);
 
     //Camera
@@ -209,25 +213,19 @@ void TestShadow::DrawScene()
     m_Light->m_Mesh->Draw(*m_LightShader, *m_Camera, lightModel);
 
     m_FloorShader->Activate();
-    if (m_Light->GetMode() != LightMode::Point)
-    {
-        m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
-    }
-    else
-    {
-        glm::mat4 lightProjection= glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
-        glm::mat4 perspectiveProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-        glm::mat4 lightView = glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-        glm::mat4 lightSpaceMatrix = perspectiveProj * lightView;
-        m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(lightSpaceMatrix));
-    }
+    m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
+    m_FloorShader->SetInt1("useShadow", m_Shadow);
+    m_FloorShader->SetFloat1("farPlane", 100.0f);
     if (m_Shadow){
-        m_FloorShader->SetInt1("useShadow", 1);
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, m_ShadowMap);
-    } else {
-        m_FloorShader->SetInt1("useShadow", 0);
+        if (m_Light->GetMode() == LightMode::Point){
+            glActiveTexture(GL_TEXTURE0 + 3);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, m_ShadowCubeMap);
+        }
+        else{
+            glActiveTexture(GL_TEXTURE0 + 2);
+            glBindTexture(GL_TEXTURE_2D, m_ShadowMap);
+        }
     }
     m_Floor->Draw(*m_FloorShader, *m_Camera);
 
@@ -258,20 +256,14 @@ void TestShadow::OnImguiRender()
     if (ImGui::Button("Directional Light"))
     {
         m_Light->SetMode(m_FloorShader.get(), LightMode::Directional);
-        // m_CubeInstanceShader->Activate();
-        // m_CubeInstanceShader->SetInt1("lightMode", 0);
     }
     if (ImGui::Button("Point Light"))
     {
         m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
-        // m_CubeInstanceShader->Activate();
-        // m_CubeInstanceShader->SetInt1("lightMode", 1);
     }
     if (ImGui::Button("Spot Light"))
     {
         m_Light->SetMode(m_FloorShader.get(), LightMode::Spot);
-        // m_CubeInstanceShader->Activate();
-        // m_CubeInstanceShader->SetInt1("lightMode", 2);
     }
     if (ImGui::DragFloat3("Position", m_LightPos, 0.1f, -5.0f, 5.0f))
     {

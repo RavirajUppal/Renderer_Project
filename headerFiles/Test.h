@@ -38,6 +38,7 @@ private:
     unsigned int m_ShadowCubeMapFBO;
     std::unique_ptr<Shader> m_PostProcessShader;
     std::unique_ptr<Shader> m_ShadowMapShader;
+    std::unique_ptr<Shader> m_ShadowCubeMapShader;
     std::unique_ptr<Shader> m_DebugOutputShader;
     void RenderShadowPass();
     void ConfigureShadowShader();

@@ -33,8 +33,8 @@ public:
     void SetMode(Shader* shader, LightMode mode);
     LightMode GetMode() const;
 
-    const glm::mat4& GetLightSpaceMatrix();
-    const std::vector<glm::mat4>& GetLightSpaceMatrices();
+    const glm::mat4 GetLightSpaceMatrix();
+    const std::vector<glm::mat4> GetLightMatricesForCubeMap();
 
     std::unique_ptr<Mesh> m_Mesh;
 

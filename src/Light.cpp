@@ -16,13 +16,13 @@ void Light::SetMode(Shader* shader, LightMode mode)
 }
 LightMode Light::GetMode() const {return m_Mode;}
 
-const glm::mat4& Light::GetLightSpaceMatrix()
+const glm::mat4 Light::GetLightSpaceMatrix()
 {
     glm::mat4 ProjectionMatrix = glm::mat4(1.0f);
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     if (m_Mode == LightMode::Directional)
     {
-        ProjectionMatrix= glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+        ProjectionMatrix= glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f);
         viewMatrix = glm::lookAt(10.0f * m_Position, glm::vec3(0.0), glm::vec3(0.0f, 0.0f, -1.0f));
     }
     else if (m_Mode ==LightMode::Spot)
@@ -33,29 +33,29 @@ const glm::mat4& Light::GetLightSpaceMatrix()
     else
     {
         ProjectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-        viewMatrix = glm::lookAt(m_Position, m_Position + glm::vec3(0.0, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+        viewMatrix = glm::lookAt(m_Position, glm::vec3(0.0, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
     }
     glm::mat4 lightSpaceMatrix = ProjectionMatrix * viewMatrix;
     return lightSpaceMatrix;
 }
 
-const std::vector<glm::mat4>& Light::GetLightSpaceMatrices()
+const std::vector<glm::mat4> Light::GetLightMatricesForCubeMap()
 {
     glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-    std::vector<glm::mat4> shadowTransforms;
-    shadowTransforms.push_back(ProjectionMatrix * 
+    std::vector<glm::mat4> lightSpaceMatrices;
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
-    shadowTransforms.push_back(ProjectionMatrix * 
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,-1.0, 0.0)));
-    shadowTransforms.push_back(ProjectionMatrix * 
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-    shadowTransforms.push_back(ProjectionMatrix * 
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0, 0.0,-1.0)));
-    shadowTransforms.push_back(ProjectionMatrix * 
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0,-1.0, 0.0)));
-    shadowTransforms.push_back(ProjectionMatrix * 
+    lightSpaceMatrices.push_back(ProjectionMatrix * 
                  glm::lookAt(m_Position, m_Position + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0,-1.0, 0.0)));
-    return shadowTransforms;
+    return lightSpaceMatrices;
 }
 
 // ---------------- Directional Light ----------------
