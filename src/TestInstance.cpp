@@ -108,6 +108,8 @@ TestInstance::TestInstance(GLFWwindow *window) : Test(window), m_Window(window)
 	glUniform3f(glGetUniformLocation(m_ShaderProgram->ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 	glUniform1i(glGetUniformLocation(m_ShaderProgram->ID, "lightMode"), 0);
     m_ShaderProgram->SetInt1("useShadow", 0);
+	    m_ShaderProgram->SetInt1("shadowMap", 2);
+    m_ShaderProgram->SetInt1("shadowCubeMap", 3);
 
 	m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 30.0f, 150.0f), glm::vec3(0.0f, -0.2f, -1.0f));
 

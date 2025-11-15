@@ -21,6 +21,9 @@ TestModel::TestModel(GLFWwindow *window) : Test(window), m_Window(window)
 	glUniform3f(glGetUniformLocation(m_ShaderProgram->ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 	glUniform1i(glGetUniformLocation(m_ShaderProgram->ID, "lightMode"), 0);
 
+    m_ShaderProgram->SetInt1("shadowMap", 2);
+    m_ShaderProgram->SetInt1("shadowCubeMap", 3);
+
     m_OutliningShader = std::make_unique<Shader>(SHADER_DIR "outlining.vert", SHADER_DIR "outlining.frag");
 
 	m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 0.0f, 35.0f));

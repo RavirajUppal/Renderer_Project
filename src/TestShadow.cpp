@@ -142,6 +142,8 @@ TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
     m_FloorShader->SetInt1("shadowMap", 2);
     m_FloorShader->SetInt1("shadowCubeMap", 3);
+    m_FloorShader->SetFloat1("farPlane", 100.0f);
+
     m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
     m_Floor = std::make_unique<Mesh>(floorVerts, floorIndi, floorTex);
 
@@ -216,7 +218,6 @@ void TestShadow::DrawScene()
     m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
     m_FloorShader->SetInt1("useShadow", m_Shadow);
-    m_FloorShader->SetFloat1("farPlane", 100.0f);
     if (m_Shadow){
         if (m_Light->GetMode() == LightMode::Point){
             glActiveTexture(GL_TEXTURE0 + 3);

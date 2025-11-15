@@ -78,6 +78,8 @@ TestLight::TestLight(GLFWwindow *window) : Test(window), m_Window(window)
 	glUniform4f(glGetUniformLocation(m_FloorShader->ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(m_FloorShader->ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 	glUniform1i(glGetUniformLocation(m_FloorShader->ID, "lightMode"), 0);
+    m_FloorShader->SetInt1("shadowMap", 2);
+    m_FloorShader->SetInt1("shadowCubeMap", 3);
 
     // glUniformMatrix4fv(glGetUniformLocation(m_FloorShader->ID, "translation"), 1, GL_FALSE, glm::value_ptr( glm::mat4(1.0f)));
 	// glUniformMatrix4fv(glGetUniformLocation(m_FloorShader->ID, "rotation"), 1, GL_FALSE, glm::value_ptr( glm::mat4(1.0f)));
@@ -98,14 +100,9 @@ void TestLight::OnUpdate(float deltaTime)
 
 void TestLight::OnRender()
 {
-    // if (m_PostProcessing)
-    {
-        Test::BindPostProcessingFrameBuffer();
-        DrawScene();
-        Test::DrawPostProcessingOnScreen();
-        // return;
-    }
-    // DrawScene();
+    Test::BindPostProcessingFrameBuffer();
+    DrawScene();
+    Test::DrawPostProcessingOnScreen();
 }
 
 void TestLight::DrawScene()

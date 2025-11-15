@@ -54,22 +54,26 @@ TestDynamicLight::TestDynamicLight(GLFWwindow *window) : Test(window), m_Window(
     std::vector<Vertex> lightVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
     std::vector<GLuint> lightIndi(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
 
+
     //Light
     m_LightShader = std::make_unique<Shader>(SHADER_DIR "light.vert", SHADER_DIR "light.frag");
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(m_LightPos[0], m_LightPos[1], m_LightPos[2]);
     m_Light = std::make_unique<Light>(lightPos, lightColor);
-    m_Light->m_Mesh = std::make_unique<Mesh>(lightVerts, lightIndi, tex);
+    m_Light->m_Mesh = std::make_unique<Mesh>(lightVerts, lightIndi);
     m_LightShader->Activate();
-    glUniform4f(glGetUniformLocation(m_LightShader->ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-    // m_Light = std::make_unique<Mesh>(lightVerts, lightIndi, tex);
+    m_LightShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 
     //Floor
     m_FloorShader = std::make_unique<Shader>(SHADER_DIR "default.vert", SHADER_DIR "default.frag", SHADER_DIR "default.geom");
     m_FloorShader->Activate();
-    glUniform4f(glGetUniformLocation(m_FloorShader->ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-    glUniform3f(glGetUniformLocation(m_FloorShader->ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-    glUniform1i(glGetUniformLocation(m_FloorShader->ID, "lightMode"), 0);
+    m_FloorShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+    m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
+    m_FloorShader->SetInt1("shadowMap", 2);
+    m_FloorShader->SetInt1("shadowCubeMap", 3);
+    m_FloorShader->SetInt1("useShadow", 0);
+    m_FloorShader->SetFloat1("farPlane", 100.0f);
+    m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
     m_Floor = std::make_unique<Mesh>(verts, indi, tex);
 
     //Camera
@@ -98,15 +102,15 @@ void TestDynamicLight::OnRender()
 
 void TestDynamicLight::DrawScene()
 {
-    glViewport(0, 0, FrameWidth, FrameHeight);
-
     glm::vec3 lightPos = m_Light->GetPosition();
     glm::mat4 lightModel = glm::mat4(1.0f);
     lightModel = glm::translate(lightModel, lightPos);
     m_Light->m_Mesh->Draw(*m_LightShader, *m_Camera, lightModel);
 
     m_FloorShader->Activate();
+    m_FloorShader->SetMat4("lightSpaceMatrix", glm::value_ptr(m_Light->GetLightSpaceMatrix()));
     m_FloorShader->SetFloat3("lightPos", lightPos.x, lightPos.y, lightPos.z);
+
     m_Floor->Draw(*m_FloorShader, *m_Camera);
 }
 
@@ -114,18 +118,15 @@ void TestDynamicLight::OnImguiRender()
 {
     if (ImGui::Button("Directional Light"))
     {
-        m_FloorShader->Activate();
-        glUniform1i(glGetUniformLocation(m_FloorShader->ID, "lightMode"), 0);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Directional);
     }
     if (ImGui::Button("Point Light"))
     {
-        m_FloorShader->Activate();
-        glUniform1i(glGetUniformLocation(m_FloorShader->ID, "lightMode"), 1);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Point);
     }
     if (ImGui::Button("Spot Light"))
     {
-        m_FloorShader->Activate();
-        glUniform1i(glGetUniformLocation(m_FloorShader->ID, "lightMode"), 2);
+        m_Light->SetMode(m_FloorShader.get(), LightMode::Spot);
     }
     if (ImGui::DragFloat3("Position", m_LightPos, 0.1f, -5.0f, 5.0f))
     {
