@@ -12,6 +12,8 @@ TestModel::TestModel(GLFWwindow *window) : Test(window), m_Window(window)
 
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(0.0f, 0.5f, 0.5f);
+    m_Light->SetColor(lightColor);
+    m_Light->SetPosition(lightPos);
 
     m_ShaderProgram = std::make_unique<Shader>(SHADER_DIR "default.vert", SHADER_DIR "default.frag", SHADER_DIR "default.geom");
     m_NormalsShader = std::make_unique<Shader>(SHADER_DIR "default.vert", SHADER_DIR "normals.frag", SHADER_DIR "normals.geom");
@@ -47,13 +49,13 @@ void TestModel::OnUpdate(float deltaTime)
 
 void TestModel::OnRender()
 {
-    // if (m_PostProcessing)
-    {
-        m_ShowOutline = false;
-        Test::BindPostProcessingFrameBuffer();
-        DrawModel();
-        Test::DrawPostProcessingOnScreen();
-    }
+    Test::BindPostProcessingFrameBuffer();
+    DrawModel();
+    Test::DrawPostProcessingOnScreen();
+}
+
+void TestModel::DrawModel()
+{
     if (m_ShowOutline)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); 
@@ -74,21 +76,18 @@ void TestModel::OnRender()
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glEnable(GL_DEPTH_TEST); 
     }
-    // else
-    // {
-    //     DrawModel();
-    // }
-}
-
-void TestModel::DrawModel()
-{
-    m_Model->Draw(*m_ShaderProgram, *m_Camera);
-    m_Model->Draw(*m_NormalsShader, *m_Camera);
+    else{
+        m_Model->Draw(*m_ShaderProgram, *m_Camera);
+    }
+    if (m_ShowNormals){
+        m_Model->Draw(*m_NormalsShader, *m_Camera);
+    }
 }
 
 void TestModel::OnImguiRender()
 {
     ImGui::Checkbox("Outline", &m_ShowOutline);
+    ImGui::Checkbox("Spikes", &m_ShowNormals);
     Test::OnImguiRender();
 }
 

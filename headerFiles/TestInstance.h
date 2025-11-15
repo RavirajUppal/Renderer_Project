@@ -20,7 +20,6 @@ private:
     std::unique_ptr<Model> m_Model;
     std::unique_ptr<Shader> m_ShaderProgram;
     std::unique_ptr<Camera> m_Camera;
-    // std::unique_ptr<Mesh> m_Light;
     void DrawModel();
 };
 

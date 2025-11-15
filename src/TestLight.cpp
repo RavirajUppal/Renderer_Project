@@ -59,7 +59,8 @@ TestLight::TestLight(GLFWwindow *window) : Test(window), m_Window(window)
 
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(0.5f, 0.9f, 0.5f);
-    m_Light = std::make_unique<Light>(lightPos, lightColor);
+    m_Light->SetColor(lightColor);
+    m_Light->SetPosition(lightPos);
     m_Light->m_Mesh = std::make_unique<Mesh>(lightVerts, lightIndi, tex);
 	// glm::mat4 lightModel = glm::mat4(1.0f);
 	// lightModel = glm::translate(lightModel, lightPos);

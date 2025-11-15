@@ -24,6 +24,7 @@ private:
     std::unique_ptr<Camera> m_Camera;
     // std::unique_ptr<Mesh> m_Light;
     bool m_ShowOutline = false;
+    bool m_ShowNormals = false;
     void DrawModel();
 };
 

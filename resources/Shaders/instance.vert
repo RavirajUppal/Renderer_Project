@@ -20,6 +20,7 @@ out vec3 currPos;
 out vec3 normal;
 out vec3 color;
 out vec2 texCoord;
+out vec4 fragPosLightSpace;
 #endif
 
 void main()
@@ -36,6 +37,7 @@ void main()
 	normal = mat3(transpose(inverse(aInstanceMatrix))) * aNormal;
 	color = aColor;
 	texCoord = aTex;
+	fragPosLightSpace = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	gl_Position = cameraMatrix * vec4(currPos, 1.0f);
 #endif
 }

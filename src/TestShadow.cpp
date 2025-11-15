@@ -70,7 +70,7 @@ namespace
 
 TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
 {
-    // m_Shadow = true;
+    m_Shadow = true;
     Vertex floorVertices[] =
         {//               COORDINATES           /            NORMALS          /           COLORS         /       TEXTURE COORDINATES    //
          Vertex{glm::vec3(-5.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)},
@@ -130,7 +130,8 @@ TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
     m_LightShader = std::make_unique<Shader>(SHADER_DIR "light.vert", SHADER_DIR "light.frag");
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(m_LightPos[0], m_LightPos[1], m_LightPos[2]);
-    m_Light = std::make_unique<Light>(lightPos, lightColor);
+    m_Light->SetColor(lightColor);
+    m_Light->SetPosition(lightPos);
     m_Light->m_Mesh = std::make_unique<Mesh>(lightVerts, lightIndi);
     m_LightShader->Activate();
     m_LightShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);

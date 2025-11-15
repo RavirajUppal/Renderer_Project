@@ -59,7 +59,8 @@ TestDynamicLight::TestDynamicLight(GLFWwindow *window) : Test(window), m_Window(
     m_LightShader = std::make_unique<Shader>(SHADER_DIR "light.vert", SHADER_DIR "light.frag");
     glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(m_LightPos[0], m_LightPos[1], m_LightPos[2]);
-    m_Light = std::make_unique<Light>(lightPos, lightColor);
+    m_Light->SetColor(lightColor);
+    m_Light->SetPosition(lightPos);
     m_Light->m_Mesh = std::make_unique<Mesh>(lightVerts, lightIndi);
     m_LightShader->Activate();
     m_LightShader->SetFloat4("lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
