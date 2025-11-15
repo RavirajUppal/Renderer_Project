@@ -170,12 +170,11 @@ int main()
 	TestMenu *testMenu = new TestMenu(window, currentTest);
 	currentTest = testMenu;
 
-	testMenu->Register<TestLight>("Lighting");
 	testMenu->Register<TestDynamicLight>("Dynamic Lighting");
+	testMenu->Register<TestShadow>("Lighting & Shadow");
 	testMenu->Register<TestModel>("Model");
 	testMenu->Register<TestCubeMap>("SkyBox");
 	testMenu->Register<TestInstance>("Instances");
-	testMenu->Register<TestShadow>("Shadow");
 
 
 	glfwSetWindowUserPointer(window, &currentTest);

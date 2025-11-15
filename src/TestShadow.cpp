@@ -149,7 +149,7 @@ TestShadow::TestShadow(GLFWwindow *window) : Test(window), m_Window(window)
     m_Floor = std::make_unique<Mesh>(floorVerts, floorIndi, floorTex);
 
     //Camera
-    m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 4.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f));
+    m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f));
 
     //Cubes
     std::vector<Vertex> CubeVerts = GenerateCube(0.2f);

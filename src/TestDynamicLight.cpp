@@ -78,7 +78,7 @@ TestDynamicLight::TestDynamicLight(GLFWwindow *window) : Test(window), m_Window(
     m_Floor = std::make_unique<Mesh>(verts, indi, tex);
 
     //Camera
-    m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 2.0f, 3.0f), glm::vec3(0.0f, -0.5f, -1.0f));
+    m_Camera = std::make_unique<Camera>(FrameHeight, FrameHeight, glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f));
 }
 
 TestDynamicLight::~TestDynamicLight()
